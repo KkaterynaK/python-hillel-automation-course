@@ -1,0 +1,5 @@
+ERROR: Heartbeat is 35.0s. Detected at 04:51:17 (Interval between 04:50:42 and 04:51:17)
+ERROR: Heartbeat is 35.0s. Detected at 03:39:11 (Interval between 03:38:36 and 03:39:11)
+ERROR: Heartbeat is 36.0s. Detected at 02:27:06 (Interval between 02:26:30 and 02:27:06)
+WARNING: Heartbeat is 32.0s. Detected at 01:35:10 (Interval between 01:34:38 and 01:35:10)
+ERROR: Heartbeat is 35.0s. Detected at 01:14:58 (Interval between 01:14:23 and 01:14:58)
