@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    triggers {
+        // Запуск пайплайну після кожного коміту (опитування репозиторію)
+        pollSCM('H/2 * * * *')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Крок 1: вилучення коду з репозиторію
+                checkout scm
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                // Крок 2: встановлення залежностей у віртуальне середовище
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+                    pip install pytest
+                '''
+            }
+        }
+
+        stage('Run tests') {
+            steps {
+                // Крок 3: запуск автотестів із генерацією JUnit-звіту
+                sh '''
+                    . venv/bin/activate
+                    pytest lesson_09/test_calc.py --junitxml=results.xml
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            // Крок 4: збір результатів тестування та їх публікація у Jenkins
+            junit testResults: 'results.xml', allowEmptyResults: true
+
+            // Надсилання листа з результатами після кожного пайплайну
+            // (вбудований плагін Mailer). Якщо SMTP у Jenkins не налаштований,
+            // пайплайн не падає — просто лишається попередження в лозі.
+            script {
+                try {
+                    mail(
+                        to: 'online@ithillel.ua',
+                        subject: "Jenkins: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
+                        body: """Пайплайн завершився зі статусом: ${currentBuild.currentResult}
+
+Проект: ${env.JOB_NAME}
+Білд: #${env.BUILD_NUMBER}
+Посилання: ${env.BUILD_URL}
+"""
+                    )
+                } catch (err) {
+                    echo "Лист не надіслано (перевірте налаштування SMTP у Jenkins): ${err}"
+                }
+            }
+        }
+    }
+}
